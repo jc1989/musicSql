@@ -27,7 +27,8 @@ SET default_table_access_method = heap;
 CREATE TABLE public.albums (
     album_id integer NOT NULL,
     album_name text,
-    album_release_date text
+    album_release_date text,
+    song_id integer
 );
 
 
@@ -61,7 +62,8 @@ ALTER SEQUENCE public.albums_album_id_seq OWNED BY public.albums.album_id;
 
 CREATE TABLE public.artists (
     artist_id integer NOT NULL,
-    artist_name text
+    artist_name text,
+    song_writer text
 );
 
 
@@ -90,47 +92,15 @@ ALTER SEQUENCE public.artists_artist_id_seq OWNED BY public.artists.artist_id;
 
 
 --
--- Name: song_writers; Type: TABLE; Schema: public; Owner: jdcannedy
---
-
-CREATE TABLE public.song_writers (
-    song_writer_id integer NOT NULL,
-    song_writer_name text
-);
-
-
-ALTER TABLE public.song_writers OWNER TO jdcannedy;
-
---
--- Name: song_writers_song_writer_id_seq; Type: SEQUENCE; Schema: public; Owner: jdcannedy
---
-
-CREATE SEQUENCE public.song_writers_song_writer_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.song_writers_song_writer_id_seq OWNER TO jdcannedy;
-
---
--- Name: song_writers_song_writer_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: jdcannedy
---
-
-ALTER SEQUENCE public.song_writers_song_writer_id_seq OWNED BY public.song_writers.song_writer_id;
-
-
---
 -- Name: songs; Type: TABLE; Schema: public; Owner: jdcannedy
 --
 
 CREATE TABLE public.songs (
     song_id integer NOT NULL,
     song_name text,
-    song_release_date text
+    song_release_date text,
+    album_id integer,
+    track_id integer
 );
 
 
@@ -208,13 +178,6 @@ ALTER TABLE ONLY public.artists ALTER COLUMN artist_id SET DEFAULT nextval('publ
 
 
 --
--- Name: song_writers song_writer_id; Type: DEFAULT; Schema: public; Owner: jdcannedy
---
-
-ALTER TABLE ONLY public.song_writers ALTER COLUMN song_writer_id SET DEFAULT nextval('public.song_writers_song_writer_id_seq'::regclass);
-
-
---
 -- Name: songs song_id; Type: DEFAULT; Schema: public; Owner: jdcannedy
 --
 
@@ -232,11 +195,11 @@ ALTER TABLE ONLY public.tracks ALTER COLUMN track_id SET DEFAULT nextval('public
 -- Data for Name: albums; Type: TABLE DATA; Schema: public; Owner: jdcannedy
 --
 
-COPY public.albums (album_id, album_name, album_release_date) FROM stdin;
-1	Sound & Fury	2019
-2	High Top Mountain	2013
-3	Aenima	1996
-4	Lateralus	2001
+COPY public.albums (album_id, album_name, album_release_date, song_id) FROM stdin;
+1	Sound & Fury	2019	\N
+2	High Top Mountain	2013	\N
+3	Aenima	1996	\N
+4	Lateralus	2001	\N
 \.
 
 
@@ -244,19 +207,9 @@ COPY public.albums (album_id, album_name, album_release_date) FROM stdin;
 -- Data for Name: artists; Type: TABLE DATA; Schema: public; Owner: jdcannedy
 --
 
-COPY public.artists (artist_id, artist_name) FROM stdin;
-1	Sturgill Simpson
-2	Tool
-\.
-
-
---
--- Data for Name: song_writers; Type: TABLE DATA; Schema: public; Owner: jdcannedy
---
-
-COPY public.song_writers (song_writer_id, song_writer_name) FROM stdin;
-1	Sturgill Simpson
-2	Maynard, James Keenan
+COPY public.artists (artist_id, artist_name, song_writer) FROM stdin;
+1	Sturgill Simpson	\N
+2	Tool	\N
 \.
 
 
@@ -264,11 +217,11 @@ COPY public.song_writers (song_writer_id, song_writer_name) FROM stdin;
 -- Data for Name: songs; Type: TABLE DATA; Schema: public; Owner: jdcannedy
 --
 
-COPY public.songs (song_id, song_name, song_release_date) FROM stdin;
-1	Ronin	2019
-2	Best Clockmaker on Mars	2019
-3	Fourty Six and 2	2001
-4	Schism	1996
+COPY public.songs (song_id, song_name, song_release_date, album_id, track_id) FROM stdin;
+1	Ronin	2019	\N	\N
+2	Best Clockmaker on Mars	2019	\N	\N
+3	Fourty Six and 2	2001	\N	\N
+4	Schism	1996	\N	\N
 \.
 
 
@@ -296,13 +249,6 @@ SELECT pg_catalog.setval('public.albums_album_id_seq', 1, false);
 --
 
 SELECT pg_catalog.setval('public.artists_artist_id_seq', 1, false);
-
-
---
--- Name: song_writers_song_writer_id_seq; Type: SEQUENCE SET; Schema: public; Owner: jdcannedy
---
-
-SELECT pg_catalog.setval('public.song_writers_song_writer_id_seq', 1, false);
 
 
 --
@@ -336,14 +282,6 @@ ALTER TABLE ONLY public.artists
 
 
 --
--- Name: song_writers song_writers_pkey; Type: CONSTRAINT; Schema: public; Owner: jdcannedy
---
-
-ALTER TABLE ONLY public.song_writers
-    ADD CONSTRAINT song_writers_pkey PRIMARY KEY (song_writer_id);
-
-
---
 -- Name: songs songs_pkey; Type: CONSTRAINT; Schema: public; Owner: jdcannedy
 --
 
@@ -357,6 +295,30 @@ ALTER TABLE ONLY public.songs
 
 ALTER TABLE ONLY public.tracks
     ADD CONSTRAINT tracks_pkey PRIMARY KEY (track_id);
+
+
+--
+-- Name: songs album_id; Type: FK CONSTRAINT; Schema: public; Owner: jdcannedy
+--
+
+ALTER TABLE ONLY public.songs
+    ADD CONSTRAINT album_id FOREIGN KEY (album_id) REFERENCES public.albums(album_id);
+
+
+--
+-- Name: albums song_id; Type: FK CONSTRAINT; Schema: public; Owner: jdcannedy
+--
+
+ALTER TABLE ONLY public.albums
+    ADD CONSTRAINT song_id FOREIGN KEY (song_id) REFERENCES public.songs(song_id);
+
+
+--
+-- Name: songs track_id; Type: FK CONSTRAINT; Schema: public; Owner: jdcannedy
+--
+
+ALTER TABLE ONLY public.songs
+    ADD CONSTRAINT track_id FOREIGN KEY (track_id) REFERENCES public.tracks(track_id);
 
 
 --
